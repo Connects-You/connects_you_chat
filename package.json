@@ -1,0 +1,37 @@
+{
+	"name": "connects-you-chat",
+	"packageManager": "yarn@3.2.3",
+	"scripts": {
+		"build": "tsc -p tsconfig.release.json",
+		"postinstall": "husky install && tsc -p tsconfig.release.json",
+		"prestart": "tsc -p tsconfig.release.json",
+		"start": "node ./build/src/index.js",
+		"dev": "nodemon ./src/index.ts -e ts,json",
+		"startLocalServer": "ngrok http 1000",
+		"kill": "sudo kill -9 `sudo lsof -t -i:1000`",
+		"lint": "eslint ./src --ext .ts,.js --fix",
+		"reinstall-nm": "rm -rf node_modules yarn.lock && yarn cache clean && touch yarn.lock && yarn"
+	},
+	"dependencies": {
+		"@adarsh-mishra/connects_you_services": "https://github.com/Connects-You/connects_you_services",
+		"@adarsh-mishra/node-utils": "https://github.com/AdarshMishraji/node-utils",
+		"dotenv": "^16.0.2"
+	},
+	"devDependencies": {
+		"@types/node": "^18.7.19",
+		"@typescript-eslint/eslint-plugin": "^5.38.0",
+		"@typescript-eslint/parser": "^5.38.0",
+		"eslint": "^8.24.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-import": "^2.26.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-sonarjs": "^0.15.0",
+		"husky": "^8.0.1",
+		"lint-staged": "^13.0.3",
+		"prettier": "^2.7.1",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.8.3"
+	},
+	"author": "Adarsh Mishra",
+	"license": "ISC"
+}
