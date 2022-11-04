@@ -6,7 +6,7 @@ export * from './user';
 declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
-			PORT: number;
+			URL: string;
 			GOOGLE_CLIENT_ID: string;
 			SECRET: string;
 			ENCRYPT_KEY: string;
@@ -23,6 +23,10 @@ declare global {
 			PROD_REDIS_DB: number;
 			PROD_REDIS_PASSWORD: string;
 			PROD_REDIS_USERNAME: string;
+			USER_SERVICE_URL: string;
+			AUTH_SERVICE_URL: string;
+			USER_SERVICE_API_KEY: string;
+			AUTH_SERVICE_API_KEY: string;
 		}
 	}
 }

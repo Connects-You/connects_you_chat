@@ -1,9 +1,10 @@
-import { getServiceProvider, grpc } from '@adarsh-mishra/connects_you_services/index';
+import { getServiceProvider, initialiseServiceAsClient } from '@adarsh-mishra/connects_you_services/index';
 import { ProtoGrpcType as AuthProtoGrpcType } from '@adarsh-mishra/connects_you_services/services/auth';
 import { ProtoGrpcType as RoomProtoGrpcType } from '@adarsh-mishra/connects_you_services/services/room';
 import { ProtoGrpcType as UserProtoGrpcType } from '@adarsh-mishra/connects_you_services/services/user';
 import { Redis } from '@adarsh-mishra/node-utils/redisHelpers';
 import { Server, ServerCredentials } from '@grpc/grpc-js';
+import dotenv from 'dotenv';
 
 import { handlerWrapper } from '../helpers';
 
@@ -21,32 +22,19 @@ const ServiceProviders = {
 	room: (getServiceProvider('room') as unknown as RoomProtoGrpcType).room,
 };
 
-const deadline = new Date();
-deadline.setSeconds(deadline.getSeconds() + 5);
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const initializeClient = (service: any, port: number, serviceName: string) => {
-	const client = new service(`0.0.0.0:${port}`, grpc.credentials.createInsecure());
-	client.waitForReady(deadline, (error) => {
-		if (error) {
-			/* eslint-disable no-console */
-			return console.error(`${serviceName} ->> 0.0.0.0:${port} error`, error);
-		}
-		console.log(`${serviceName} ->> 0.0.0.0:${port} is ready`);
-		/* eslint-enable no-console */
+const getServiceClients = () => {
+	dotenv.config();
+	const user = initialiseServiceAsClient({
+		service: ServiceProviders.user.UserServices,
+		address: process.env.AUTH_SERVICE_URL,
 	});
-	return client;
+	return { user };
 };
 
-export const ServiceClients = {
-	auth: initializeClient(ServiceProviders.auth.AuthServices, 1000, 'auth'),
-	user: initializeClient(ServiceProviders.user.UserServices, 1000, 'user'),
-};
-
-const port = `0.0.0.0:${process.env.PORT || 2000}`;
+export const ServiceClients = getServiceClients();
 
 export const createGRPCServer = ({ redisClient }: { redisClient: Redis }) => {
-	const server = new Server({ 'grpc.keepalive_permit_without_calls': 1 });
+	const server = new Server({ 'grpc.keepalive_permit_without_calls': 1, 'grpc.max_reconnect_backoff_ms': 10000 });
 
 	server.addService(ServiceProviders.room.RoomServices.service, {
 		findOrCreateDuetRoom: handlerWrapper(findOrCreateDuetRoom, { redisClient, userClient: ServiceClients.user }),
@@ -58,7 +46,7 @@ export const createGRPCServer = ({ redisClient }: { redisClient: Redis }) => {
 		UpdateGroupRoomDetails: handlerWrapper(updateGroupRoomDetails, { redisClient }),
 	});
 
-	server.bindAsync(port.toString(), ServerCredentials.createInsecure(), (error, port) => {
+	server.bindAsync(process.env.URL, ServerCredentials.createInsecure(), (error, port) => {
 		if (error) {
 			throw error;
 		}
