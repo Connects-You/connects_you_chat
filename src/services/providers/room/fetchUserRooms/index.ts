@@ -8,9 +8,9 @@ import { BadRequestError } from '@adarsh-mishra/node-utils/httpResponses';
 import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback } from '../../../helpers';
-import { RoomModel } from '../../../models/rooms.model';
-import { IRoomRaw, IRoomUserRaw, IUserRaw } from '../../../types';
+import { errorCallback } from '../../../../helpers';
+import { RoomModel } from '../../../../models/rooms.model';
+import { IRoomRaw, IRoomUserRaw, IUserRaw } from '../../../../types';
 
 type TRoomAndUserDetailed = IRoomRaw & { roomUsersDetailed?: Array<IUserRaw> };
 type TRoomAndUserAggregateResponse = Array<TRoomAndUserDetailed>;

@@ -1,7 +1,7 @@
 import { UserDetails } from '@adarsh-mishra/connects_you_services/services/user/UserDetails';
 import { UserServicesClient } from '@adarsh-mishra/connects_you_services/services/user/UserServices';
 
-import { generateGRPCAuthMetaData } from '../../helpers/generateGRPCAuthMetaData';
+import { generateGRPCAuthMetaData } from './generateGRPCAuthMetaData';
 
 export const getUserDetails = async (userId: string, userClient: UserServicesClient) => {
 	return new Promise<UserDetails | null | undefined>((resolve, reject) => {

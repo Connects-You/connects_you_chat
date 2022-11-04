@@ -49,7 +49,6 @@
       }
     ],
     "no-underscore-dangle": "off",
-    "no-unused-vars": "error",
     "no-unused-expressions": "off",
     "import/prefer-default-export": "off",
     "no-shadow": "off",
@@ -66,6 +65,9 @@
         "rcVerbose": true,
         "arrowParens": "always"
       }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error"
     ],
     "@typescript-eslint/naming-convention": [
       "error",

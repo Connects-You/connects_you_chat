@@ -9,9 +9,8 @@ import { BadRequestError } from '@adarsh-mishra/node-utils/httpResponses';
 import { MongoObjectId, mongoose } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback } from '../../../helpers';
-import { RoomModel } from '../../../models/rooms.model';
-import { getUserDetails } from '../../helpers/getUserDetails';
+import { errorCallback, getUserDetails } from '../../../../helpers';
+import { RoomModel } from '../../../../models/rooms.model';
 
 const checkExistedRoom = async (userId1: mongoose.Types.ObjectId, userId2: mongoose.Types.ObjectId) => {
 	const existedRoom = await RoomModel.findOne({

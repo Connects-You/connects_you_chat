@@ -6,9 +6,8 @@ import { BadRequestError, NotFoundError } from '@adarsh-mishra/node-utils/httpRe
 import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback } from '../../../helpers';
-import { RoomModel } from '../../../models/rooms.model';
-import { isUserAdminOfGroup } from '../../helpers/isUserAdminOfGroup';
+import { errorCallback, isUserAdminOfGroup } from '../../../../helpers';
+import { RoomModel } from '../../../../models/rooms.model';
 
 export const updateUserRoleInGroupRoom = async (
 	req: ServerUnaryCall<UpdateUserRoleInGroupRoomRequest, UpdateUserRoleInGroupRoomResponse>,

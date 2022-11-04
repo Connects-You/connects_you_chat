@@ -5,14 +5,15 @@ import { ProtoGrpcType as UserProtoGrpcType } from '@adarsh-mishra/connects_you_
 import { Redis } from '@adarsh-mishra/node-utils/redisHelpers';
 import { Server, ServerCredentials } from '@grpc/grpc-js';
 
-import { addUsersToGroupRoom } from '../handlers/room/addUsersToGroupRoom';
-import { createGroupRoom } from '../handlers/room/createGroupRoom';
-import { fetchUserRooms } from '../handlers/room/fetchUserRooms';
-import { findOrCreateDuetRoom } from '../handlers/room/findOrCreateDuetRoom';
-import { removeUsersFromGroupRoom } from '../handlers/room/removeUserFromGroupRoom';
-import { updateGroupRoomDetails } from '../handlers/room/updateGroupRoomDetails';
-import { updateUserRoleInGroupRoom } from '../handlers/room/updateUserRoleInGroupRoom';
-import { handlerWrapper } from '../helpers/grpcHandlersWrapper';
+import { handlerWrapper } from '../helpers';
+
+import { addUsersToGroupRoom } from './providers/room/addUsersToGroupRoom';
+import { createGroupRoom } from './providers/room/createGroupRoom';
+import { fetchUserRooms } from './providers/room/fetchUserRooms';
+import { findOrCreateDuetRoom } from './providers/room/findOrCreateDuetRoom';
+import { removeUsersFromGroupRoom } from './providers/room/removeUserFromGroupRoom';
+import { updateGroupRoomDetails } from './providers/room/updateGroupRoomDetails';
+import { updateUserRoleInGroupRoom } from './providers/room/updateUserRoleInGroupRoom';
 
 const ServiceProviders = {
 	auth: (getServiceProvider('auth') as unknown as AuthProtoGrpcType).auth,
