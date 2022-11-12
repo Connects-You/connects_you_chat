@@ -6,8 +6,9 @@ import { BadRequestError, NotFoundError } from '@adarsh-mishra/node-utils/httpRe
 import { MongoObjectId, mongoose } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback, isUserAdminOfGroup } from '../../../../helpers';
 import { RoomModel } from '../../../../models/rooms.model';
+import { errorCallback } from '../../../../utils';
+import { isUserAdminOfGroup } from '../_helper';
 
 export const removeUsersFromGroupRoom = async (
 	req: ServerUnaryCall<RemoveUsersFromGroupRoomRequest, RemoveUsersFromGroupRoomResponse>,
@@ -19,21 +20,21 @@ export const removeUsersFromGroupRoom = async (
 			throw new BadRequestError({ error: 'roomId and userId are required and roomUsers must not be empty' });
 		}
 
-		const roomIdObj = MongoObjectId(roomId);
-		const adminUserIdObj = MongoObjectId(adminUserId);
+		const roomObjectId = MongoObjectId(roomId);
+		const adminUserObjectId = MongoObjectId(adminUserId);
 
-		const userIdObjs: Array<mongoose.Types.ObjectId> = [];
+		const userObjectIds: Array<mongoose.Types.ObjectId> = [];
 		for (const userId of userIds) {
 			const id = MongoObjectId(userId);
-			if (id) userIdObjs.push(id);
+			if (id) userObjectIds.push(id);
 		}
 
-		if (userIdObjs.length !== userIds.length || !roomIdObj || !adminUserIdObj)
+		if (userObjectIds.length !== userIds.length || !roomObjectId || !adminUserObjectId)
 			throw new BadRequestError({
 				error: 'Invalid request. Please provide valid userIds or roomId or adminUserId',
 			});
 
-		const isCreatorAdminOfGroup = await isUserAdminOfGroup(roomIdObj, adminUserIdObj);
+		const isCreatorAdminOfGroup = await isUserAdminOfGroup(roomObjectId, adminUserObjectId);
 
 		if (!isCreatorAdminOfGroup) {
 			throw new BadRequestError({ error: 'Only admins can remove users from a group' });
@@ -41,14 +42,14 @@ export const removeUsersFromGroupRoom = async (
 
 		const updateRoomResponse = await RoomModel.updateOne(
 			{
-				_id: roomIdObj,
+				_id: roomObjectId,
 				'roomUsers.userId': {
-					$all: userIdObjs,
+					$all: userObjectIds,
 				},
 			},
 			{
 				$pull: {
-					roomUsers: { userId: { $in: userIdObjs } },
+					roomUsers: { userId: { $in: userObjectIds } },
 				},
 			},
 		)

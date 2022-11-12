@@ -8,8 +8,8 @@ import { BadRequestError } from '@adarsh-mishra/node-utils/httpResponses';
 import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback } from '../../../../helpers';
 import { RoomModel } from '../../../../models/rooms.model';
+import { errorCallback } from '../../../../utils';
 
 export const createGroupRoom = async (
 	req: ServerUnaryCall<CreateGroupRoomRequest, CreateGroupRoomResponse>,
@@ -24,8 +24,8 @@ export const createGroupRoom = async (
 			throw new BadRequestError({ error: 'creatorUserId should not be in roomUserIds' });
 		}
 
-		const creatorUserIdObj = MongoObjectId(createdByUserId);
-		if (!creatorUserIdObj) {
+		const creatorUserObjectId = MongoObjectId(createdByUserId);
+		if (!creatorUserObjectId) {
 			throw new BadRequestError({ error: 'Invalid User Id' });
 		}
 
@@ -33,19 +33,19 @@ export const createGroupRoom = async (
 
 		const roomUsers = [
 			{
-				userId: creatorUserIdObj,
+				userId: creatorUserObjectId,
 				userRole: RoomUserRoleEnum.GROUP_ADMIN,
 				joinedAt: userJoiningDate,
 			},
 		];
 
 		for (const id of roomUserIds) {
-			const userIdObj = MongoObjectId(id);
-			if (!userIdObj) {
+			const userObjectId = MongoObjectId(id);
+			if (!userObjectId) {
 				throw new BadRequestError({ error: 'Invalid User Id in roomUsers' });
 			}
 			roomUsers.push({
-				userId: userIdObj,
+				userId: userObjectId,
 				userRole: RoomUserRoleEnum.GROUP_MEMBER,
 				joinedAt: userJoiningDate,
 			});
@@ -62,7 +62,7 @@ export const createGroupRoom = async (
 
 		const roomData = await RoomModel.create({
 			roomType: RoomTypesEnum.GROUP,
-			createdByUserId: creatorUserIdObj,
+			createdByUserId: creatorUserObjectId,
 			roomUsers,
 			...encryptedRoomData,
 		});
@@ -70,7 +70,7 @@ export const createGroupRoom = async (
 		return callback(null, {
 			status: ResponseStatusEnum.SUCCESS,
 			data: {
-				rooms: {
+				room: {
 					roomName: roomData.roomName,
 					roomLogoUrl: roomData.roomLogoUrl,
 					roomDescription: roomData.roomDescription,

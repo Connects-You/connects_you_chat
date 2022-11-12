@@ -6,8 +6,9 @@ import { BadRequestError, NotFoundError } from '@adarsh-mishra/node-utils/httpRe
 import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback, isUserAdminOfGroup } from '../../../../helpers';
 import { RoomModel } from '../../../../models/rooms.model';
+import { errorCallback } from '../../../../utils';
+import { isUserAdminOfGroup } from '../_helper';
 
 export const updateUserRoleInGroupRoom = async (
 	req: ServerUnaryCall<UpdateUserRoleInGroupRoomRequest, UpdateUserRoleInGroupRoomResponse>,
@@ -25,17 +26,17 @@ export const updateUserRoleInGroupRoom = async (
 			throw new BadRequestError({ error: 'roomId and userId are required, and userRole must be valid' });
 		}
 
-		const roomIdObj = MongoObjectId(roomId);
-		const adminUserIdObj = MongoObjectId(adminUserId);
+		const roomObjectId = MongoObjectId(roomId);
+		const adminUserObjectId = MongoObjectId(adminUserId);
 
-		const userIdObj = MongoObjectId(userId);
+		const userObjectId = MongoObjectId(userId);
 
-		if (!userIdObj || !roomIdObj || !adminUserIdObj)
+		if (!userObjectId || !roomObjectId || !adminUserObjectId)
 			throw new BadRequestError({
 				error: 'Invalid request. Please provide valid userId or roomId or adminUserId',
 			});
 
-		const isCreatorAdminOfGroup = await isUserAdminOfGroup(roomIdObj, adminUserIdObj);
+		const isCreatorAdminOfGroup = await isUserAdminOfGroup(roomObjectId, adminUserObjectId);
 
 		if (!isCreatorAdminOfGroup) {
 			throw new BadRequestError({ error: 'Only admins can update userRole in groups' });
@@ -43,8 +44,8 @@ export const updateUserRoleInGroupRoom = async (
 
 		const updateRoomResponse = await RoomModel.updateOne(
 			{
-				_id: roomIdObj,
-				'roomUsers.userId': userIdObj,
+				_id: roomObjectId,
+				'roomUsers.userId': userObjectId,
 			},
 			{
 				$set: {

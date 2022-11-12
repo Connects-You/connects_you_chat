@@ -1,0 +1,1 @@
+export const MAX_ROOM_USERS_ALLOWED = 1024;

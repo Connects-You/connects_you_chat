@@ -6,28 +6,14 @@ import { RoomUserRoleEnum } from '@adarsh-mishra/connects_you_services/services/
 import { UserServicesClient } from '@adarsh-mishra/connects_you_services/services/user/UserServices';
 import { isEmptyEntity } from '@adarsh-mishra/node-utils/commonHelpers';
 import { BadRequestError } from '@adarsh-mishra/node-utils/httpResponses';
-import { MongoObjectId, mongoose } from '@adarsh-mishra/node-utils/mongoHelpers';
+import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
-import { errorCallback, getUserDetails } from '../../../../helpers';
 import { RoomModel } from '../../../../models/rooms.model';
+import { errorCallback } from '../../../../utils';
+import { getUserDetails } from '../_helper';
 
-const checkExistedRoom = async (userId1: mongoose.Types.ObjectId, userId2: mongoose.Types.ObjectId) => {
-	const existedRoom = await RoomModel.findOne({
-		roomType: RoomTypesEnum.DUET,
-		$or: [
-			{ 'roomUsers.0.userId': userId1, 'roomUsers.1.userId': userId2 },
-			{ 'roomUsers.1.userId': userId1, 'roomUsers.0.userId': userId2 },
-		],
-	})
-		.lean()
-		.exec();
-	if (existedRoom && !isEmptyEntity(existedRoom)) {
-		Object.assign(existedRoom, { roomId: existedRoom._id.toString() });
-		return existedRoom;
-	}
-	return undefined;
-};
+import { checkExistedRoom } from './checkExistedRoom';
 
 export const findOrCreateDuetRoom = async (
 	req: ServerUnaryCall<FindOrCreateDuetRoomRequest, FindOrCreateDuetRoomResponse>,
@@ -43,10 +29,10 @@ export const findOrCreateDuetRoom = async (
 				error: 'Invalid request. Please provide createdByUserId and participantUserId',
 			});
 
-		const creatorUserIdObj = MongoObjectId(createdByUserId);
-		const participantUserIdObj = MongoObjectId(participantUserId);
+		const creatorUserObjectId = MongoObjectId(createdByUserId);
+		const participantUserObjectId = MongoObjectId(participantUserId);
 
-		if (!creatorUserIdObj || !participantUserIdObj) {
+		if (!creatorUserObjectId || !participantUserObjectId) {
 			throw new BadRequestError({
 				error: 'Invalid request. Please provide valid createdByUserId and participantUserId',
 			});
@@ -59,13 +45,13 @@ export const findOrCreateDuetRoom = async (
 			});
 		}
 
-		const existedRoom = await checkExistedRoom(creatorUserIdObj, participantUserIdObj);
+		const existedRoom = await checkExistedRoom(creatorUserObjectId, participantUserObjectId);
 
 		if (existedRoom)
 			return callback(null, {
 				status: ResponseStatusEnum.SUCCESS,
 				data: {
-					rooms: {
+					room: {
 						roomName: participantUserDetails?.name,
 						roomLogoUrl: participantUserDetails?.photoUrl,
 						roomDescription: participantUserDetails?.description,
@@ -85,15 +71,15 @@ export const findOrCreateDuetRoom = async (
 
 		const roomData = await RoomModel.create({
 			roomType: RoomTypesEnum.DUET,
-			createdByUserId: creatorUserIdObj,
+			createdByUserId: creatorUserObjectId,
 			roomUsers: [
 				{
-					userId: creatorUserIdObj,
+					userId: creatorUserObjectId,
 					userRole: RoomUserRoleEnum.DUET_CREATOR,
 					joinedAt: userJoiningDate,
 				},
 				{
-					userId: participantUserIdObj,
+					userId: participantUserObjectId,
 					userRole: RoomUserRoleEnum.DUET_PARTICIPANT,
 					joinedAt: userJoiningDate,
 				},
@@ -103,7 +89,7 @@ export const findOrCreateDuetRoom = async (
 		return callback(null, {
 			status: ResponseStatusEnum.SUCCESS,
 			data: {
-				rooms: {
+				room: {
 					roomName: participantUserDetails?.name,
 					roomLogoUrl: participantUserDetails?.photoUrl,
 					roomDescription: participantUserDetails?.description,
