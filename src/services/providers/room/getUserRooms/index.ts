@@ -7,8 +7,7 @@ import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
 import { RoomModel } from '../../../../models/rooms.model';
 import { errorCallback } from '../../../../utils';
-
-import { prepareResponseForRoomAndRoomUsers } from './prepareResponseForRoomAndRoomUsers';
+import { prepareResponseForRoomAndRoomUsers } from '../_helper';
 
 // below function is a candidate to be separated from this repo, and moved to a repo for shared logic between user and room
 export const getUserRooms = async (

@@ -8,6 +8,7 @@ import { BadRequestError } from '@adarsh-mishra/node-utils/httpResponses';
 import { MongoObjectId } from '@adarsh-mishra/node-utils/mongoHelpers';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
+import { MAX_ROOM_USERS_ALLOWED } from '../../../../constants';
 import { RoomModel } from '../../../../models/rooms.model';
 import { errorCallback } from '../../../../utils';
 
@@ -19,6 +20,10 @@ export const createGroupRoom = async (
 		const { createdByUserId, roomUserIds, roomDescription, roomLogoUrl, roomName } = req.request;
 		if (!roomName || !createdByUserId || !roomUserIds || isEmptyArray(roomUserIds))
 			throw new BadRequestError({ error: 'Requires Fields are missing' });
+
+		if (roomUserIds.length > MAX_ROOM_USERS_ALLOWED) {
+			throw new BadRequestError({ error: `Room can have only ${MAX_ROOM_USERS_ALLOWED} users` });
+		}
 
 		if (roomUserIds.includes(createdByUserId)) {
 			throw new BadRequestError({ error: 'creatorUserId should not be in roomUserIds' });
