@@ -25,9 +25,9 @@ export const getUserDetails = async (userId: string, userClient: UserServicesCli
 	return new Promise<UserDetails | null | undefined>((resolve, reject) => {
 		const meta = generateGRPCUserMetaData();
 
-		userClient.getUserDetails({ userId }, meta, (err, user) => {
-			if (err) {
-				reject(err);
+		userClient.getUserDetails({ userId }, meta, (error, user) => {
+			if (error) {
+				reject(error);
 			}
 			resolve(user?.data?.user);
 		});

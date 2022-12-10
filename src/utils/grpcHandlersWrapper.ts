@@ -2,13 +2,22 @@ import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 
 import { validateAccess } from '../middlewares';
 
+import { errorCallback } from './errorCallback';
+
 export const handlerWrapper =
-	<TReq, TRes>(
-		handler: (req: ServerUnaryCall<TReq, TRes>, callback: sendUnaryData<TRes>, wrappers: object) => void,
+	<TReq extends object, TRes extends object>(
+		handler: (request: TReq, wrappers?: object) => Promise<TRes>,
 		wrappers?: object,
 		validationRequired = true,
 	) =>
-	(req: ServerUnaryCall<TReq, TRes>, callback: sendUnaryData<TRes>) => {
-		if (validationRequired) validateAccess(req);
-		handler(req, callback, wrappers ?? {});
+	async (req: ServerUnaryCall<TReq, TRes>, callback: sendUnaryData<TRes>) => {
+		// eslint-disable-next-line no-console
+		console.log('Service path->>', req.getPath());
+		try {
+			if (validationRequired) validateAccess(req.metadata);
+			const response = await handler(req.request, wrappers);
+			callback(null, response);
+		} catch (error) {
+			errorCallback(callback, error);
+		}
 	};

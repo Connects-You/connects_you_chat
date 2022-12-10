@@ -44,13 +44,31 @@ const getServiceClients = () => {
 	return { user };
 };
 
-export const ServiceClients = getServiceClients();
+class SingletonServiceClients {
+	private static instance?: SingletonServiceClients;
+	private serviceClients: ReturnType<typeof getServiceClients>;
+	private constructor() {
+		this.serviceClients = getServiceClients();
+	}
+	public static getInstance(): SingletonServiceClients {
+		if (!SingletonServiceClients.instance) {
+			SingletonServiceClients.instance = new SingletonServiceClients();
+		}
+		return SingletonServiceClients.instance;
+	}
+	public getServiceClients() {
+		return this.serviceClients;
+	}
+}
+
+export const ServiceClients = SingletonServiceClients.getInstance();
 
 export const createGRPCServer = () => {
+	const serviceClients = ServiceClients.getServiceClients();
 	const server = new Server({ 'grpc.keepalive_permit_without_calls': 1, 'grpc.max_reconnect_backoff_ms': 10000 });
 
 	server.addService(ServiceProviders.room.RoomServices.service, {
-		findOrCreateDuetRoom: handlerWrapper(findOrCreateDuetRoom, { userClient: ServiceClients.user }),
+		findOrCreateDuetRoom: handlerWrapper(findOrCreateDuetRoom, { userClient: serviceClients.user }),
 		createGroupRoom: handlerWrapper(createGroupRoom),
 		addUsersToGroupRoom: handlerWrapper(addUsersToGroupRoom),
 		updateUserRoleInGroupRoom: handlerWrapper(updateUserRoleInGroupRoom),
